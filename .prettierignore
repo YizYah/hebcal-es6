@@ -8,3 +8,4 @@ src/*.po.ts
 src/*.json.ts
 src/pkgVersion.ts
 size-demo/dist
+.hublaunch

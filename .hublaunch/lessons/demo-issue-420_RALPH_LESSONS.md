@@ -29,7 +29,10 @@
 ## Notes
 - No @example written on new methods (optional), so no docexamples change.
 - .hublaunch/* files flagged by `prettier --check .` are harness artifacts, not
-  part of the change / commit.
+  part of the change / commit. FIX: added `.hublaunch` to `.prettierignore`
+  (alongside dist/docs/coverage/node_modules) instead of reformatting them —
+  lessons/plans/logs are regenerated every run, so `prettier --write` would just
+  need to be reapplied each run, and they aren't real source files anyway.
 
 ## Next Steps
 - Done. Commit on branch demo-issue-420.
