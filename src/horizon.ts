@@ -5,13 +5,28 @@
  *
  * The method follows Keller & Hall, _Using a digital terrain model to
  * calculate visual sunrise and sunset times_, Computers & Geosciences 26
- * (2000), and the convention of the Chai Tables (chaitables.com; Keller &
- * Hall). Refraction uses the Sinclair model below 15° and the Bennett model
- * at or above 15°, both at standard atmosphere (1010 hPa, 10 °C), matching the
- * Chai Tables. "Visible" means the moment the sun's _upper limb_, bent up by
- * refraction, first clears (sunrise) or last touches (sunset) the real
- * skyline. No cushion or safety margin is added — the raw computed instant is
- * returned.
+ * (2000) 991–1000, https://doi.org/10.1016/S0098-3004(00)00058-3 (a copy is
+ * hosted at http://www.chaitables.com/DblHallpaperpub.htm), and their part II,
+ * Computers & Geosciences 162 (2022) 105044,
+ * https://doi.org/10.1016/j.cageo.2022.105044, which re-examines the
+ * refraction model with ray tracing and finds the standard formulas adequate.
+ * It matches the conventions of the Chai Tables (https://www.chaitables.com),
+ * the authors' public service that computes these times for the printed
+ * Israeli calendars; their conventions are described at
+ * http://www.chaitables.com/Introduction_to_DTM_calculations.html.
+ *
+ * Refraction uses the Sinclair model below 15° and the Bennett model at or
+ * above 15°, both at standard atmosphere (1010 hPa, 10 °C), matching the Chai
+ * Tables. Bennett's formula is from G. G. Bennett, _The calculation of
+ * astronomical refraction in marine navigation_, Journal of Navigation 35
+ * (1982) 255–259, https://doi.org/10.1017/S0373463300022037; Sinclair's
+ * low-altitude formula is the one given in the _Explanatory Supplement to the
+ * Astronomical Almanac_ (ed. Seidelmann, 1992), §3.283, and both are
+ * reproduced in Keller & Hall (2000). "Visible" means the moment the sun's
+ * _upper limb_ (semidiameter 16′), bent up by refraction, first clears
+ * (sunrise) or last touches (sunset) the real skyline. No cushion or safety
+ * margin is added — the raw computed instant is returned (the Chai Tables add
+ * 20 seconds).
  *
  * This module is pure: it depends on nothing from `@hebcal/noaa` and performs
  * no I/O. The horizon profile is always supplied by the caller; building one

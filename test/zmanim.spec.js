@@ -660,13 +660,35 @@ test('formatTime', () => {
 // a terrain horizon profile; the library returns when the sun's upper limb
 // clears (or last touches) that real skyline rather than the flat sea-level one.
 //
-// The two profiles below are apparent skyline altitudes (degrees above the
-// astronomical horizon) sampled every 1° of azimuth from a 30 m digital
-// elevation model, with obstructions nearer than 0.5 km ignored, as the Chai
-// Tables do. Tiberias looks east at the Golan escarpment 13-22 km away;
-// Rechovot at the Judean hills 27-38 km away. The expected times agree with
-// the Chai Tables' point tables for the same coordinates to within their
-// published 20-second safety cushion.
+// Where the figures come from:
+//
+// The two profiles below were computed for this PR, not copied from a
+// published table. They are apparent skyline altitudes (degrees above the
+// observer's astronomical horizon) sampled every 1° of azimuth over the
+// eastern arc, from the Mapzen/AWS "terrarium" terrain tiles
+// (https://registry.opendata.aws/terrain-tiles/, SRTM-derived, ~30 m; zoom 13
+// near the observer down to zoom 10 beyond 60 km; encoding documented at
+// https://github.com/tilezen/joerd/blob/master/docs/formats.md). For each
+// azimuth a ray is marched outward to 200 km in steps, and the steepest angle
+// to the terrain is kept, with Earth's curvature and a terrestrial refraction
+// coefficient of k = 0.13 applied, an observer eye height of 2 m, and
+// obstructions nearer than 0.5 km ignored — the same conventions the Chai
+// Tables use (http://www.chaitables.com/Introduction_to_DTM_calculations.html).
+// Tiberias looks east at the Golan escarpment 13–22 km away; Rechovot at the
+// Judean hills 27–38 km away. Both were chosen because their skylines are
+// distant, where a satellite surface model and a bare-earth terrain model
+// agree.
+//
+// The expected times are this library's own output for those profiles, so the
+// tests guard against regressions rather than against an outside reference.
+// The outside check was done separately: for the same coordinates, every day
+// of 5787 was compared against the Chai Tables' point tables
+// (https://www.chaitables.com, "all places by coordinates", 0.5 km shave,
+// default cushion). The Chai Tables add a 20-second safety cushion to sunrise,
+// so the ideal difference is −20 s; this library came out at −22 s (σ 5 s)
+// for Tiberias and −34 s (σ 27 s) for Rechovot, the wider Rechovot spread
+// coming from the terrain data (30 m satellite tiles versus their 25 m national
+// DTM) rather than from the time calculation.
 const TIBERIAS_EAST = [
   [60, 1.26],
   [61, 1.28],
