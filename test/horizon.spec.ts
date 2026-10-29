@@ -68,7 +68,6 @@ test('horizonElevation throws TypeError on non-finite constant', () => {
 test('refractionAtApparentAltitude reference values', () => {
   expect(refractionAtApparentAltitude(0)).toBeCloseTo(0.5689, 4);
   expect(refractionAtApparentAltitude(1)).toBeCloseTo(0.402, 4);
-  // The plan quotes ≈0.0607; the Bennett formula actually yields 0.060604.
   expect(refractionAtApparentAltitude(15)).toBeCloseTo(0.0606, 4);
 });
 

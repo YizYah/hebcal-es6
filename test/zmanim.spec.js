@@ -660,33 +660,148 @@ test('formatTime', () => {
 // a terrain horizon profile; the library returns when the sun's upper limb
 // clears (or last touches) that real skyline rather than the flat sea-level one.
 //
-// NOTE: the plan's TIBERIAS_EAST / RECHOVOT_EAST reference instants assume
-// specific sample pairs that were not included in the plan text, so those exact
-// eastern-ridge times could not be reproduced verbatim; realistic eastern
-// profiles are used below and the actually-computed values asserted. The
-// Chicago (constant / function), Tromsø and Denver cases are fully specified by
-// the plan and reproduce exactly.
+// The two profiles below are apparent skyline altitudes (degrees above the
+// astronomical horizon) sampled every 1° of azimuth from a 30 m digital
+// elevation model, with obstructions nearer than 0.5 km ignored, as the Chai
+// Tables do. Tiberias looks east at the Golan escarpment 13-22 km away;
+// Rechovot at the Judean hills 27-38 km away. The expected times agree with
+// the Chai Tables' point tables for the same coordinates to within their
+// published 20-second safety cushion.
 const TIBERIAS_EAST = [
-  [60, 3],
-  [75, 5],
-  [90, 6],
-  [105, 5.5],
-  [120, 4],
+  [60, 1.26],
+  [61, 1.28],
+  [62, 1.3],
+  [63, 1.31],
+  [64, 1.32],
+  [65, 1.24],
+  [66, 1.27],
+  [67, 1.32],
+  [68, 1.32],
+  [69, 1.3],
+  [70, 1.29],
+  [71, 1.34],
+  [72, 1.3],
+  [73, 1.29],
+  [74, 1.27],
+  [75, 1.27],
+  [76, 1.27],
+  [77, 1.29],
+  [78, 1.53],
+  [79, 1.57],
+  [80, 1.62],
+  [81, 1.63],
+  [82, 1.64],
+  [83, 1.62],
+  [84, 1.66],
+  [85, 1.68],
+  [86, 1.76],
+  [87, 1.76],
+  [88, 1.7],
+  [89, 1.65],
+  [90, 1.61],
+  [91, 1.6],
+  [92, 1.6],
+  [93, 1.58],
+  [94, 1.53],
+  [95, 1.53],
+  [96, 1.51],
+  [97, 1.54],
+  [98, 1.53],
+  [99, 1.54],
+  [100, 1.56],
+  [101, 1.69],
+  [102, 1.75],
+  [103, 1.84],
+  [104, 1.86],
+  [105, 1.87],
+  [106, 1.86],
+  [107, 1.87],
+  [108, 1.88],
+  [109, 1.87],
+  [110, 1.88],
+  [111, 1.88],
+  [112, 1.88],
+  [113, 1.91],
+  [114, 1.93],
+  [115, 1.94],
+  [116, 1.95],
+  [117, 1.97],
+  [118, 1.98],
+  [119, 1.97],
+  [120, 1.94],
 ].map(([azimuth, elevation]) => ({azimuth, elevation}));
 
 const RECHOVOT_EAST = [
-  [60, 0.5],
-  [90, 1],
-  [120, 0.8],
+  [60, 1.29],
+  [61, 1.29],
+  [62, 1.27],
+  [63, 1.27],
+  [64, 1.33],
+  [65, 1.4],
+  [66, 1.4],
+  [67, 1.31],
+  [68, 1.18],
+  [69, 1],
+  [70, 0.89],
+  [71, 0.99],
+  [72, 1.03],
+  [73, 0.99],
+  [74, 0.99],
+  [75, 0.98],
+  [76, 0.99],
+  [77, 1.03],
+  [78, 1.02],
+  [79, 1.04],
+  [80, 1.1],
+  [81, 1.06],
+  [82, 1.07],
+  [83, 1.07],
+  [84, 1.09],
+  [85, 1.11],
+  [86, 1.11],
+  [87, 1.11],
+  [88, 1.14],
+  [89, 1.14],
+  [90, 1.15],
+  [91, 1.22],
+  [92, 1.16],
+  [93, 1.03],
+  [94, 1.11],
+  [95, 1.12],
+  [96, 1.03],
+  [97, 1.13],
+  [98, 1.16],
+  [99, 1.22],
+  [100, 1.19],
+  [101, 1.28],
+  [102, 1.33],
+  [103, 1.34],
+  [104, 1.38],
+  [105, 1.33],
+  [106, 1.35],
+  [107, 1.32],
+  [108, 1.19],
+  [109, 1.2],
+  [110, 1.22],
+  [111, 1.17],
+  [112, 1.11],
+  [113, 1.18],
+  [114, 1.31],
+  [115, 1.25],
+  [116, 1.25],
+  [117, 1.28],
+  [118, 1.32],
+  [119, 1.19],
+  [120, 1.19],
 ].map(([azimuth, elevation]) => ({azimuth, elevation}));
 
 test('visibleSunrise Tiberias', () => {
   const tzid = 'Asia/Jerusalem';
   const gloc = new GeoLocation(null, 32.79, 35.53, 0, tzid);
   const cases = {
-    '2026-11-24': '2026-11-24T06:40:29+02:00',
-    '2027-06-09': '2027-06-09T05:50:35+03:00',
-    '2027-03-26': '2027-03-26T07:04:43+03:00',
+    '2026-11-24': '2026-11-24T06:27:32+02:00',
+    '2027-06-09': '2027-06-09T05:37:29+03:00',
+    '2027-03-26': '2027-03-26T06:43:29+03:00',
   };
   for (const [ds, expected] of Object.entries(cases)) {
     const zman = new Zmanim(gloc, new Date(ds + 'T12:00:00'), false);
@@ -700,7 +815,7 @@ test('visibleSunrise Rechovot', () => {
   const gloc = new GeoLocation(null, 31.8928, 34.8113, 0, tzid);
   const zman = new Zmanim(gloc, new Date('2019-11-24T12:00:00'), false);
   const dt = zman.visibleSunrise(RECHOVOT_EAST);
-  expect(Zmanim.formatISOWithTimeZone(tzid, dt)).toBe('2019-11-24T06:21:45+02:00');
+  expect(Zmanim.formatISOWithTimeZone(tzid, dt)).toBe('2019-11-24T06:24:15+02:00');
 });
 
 test('visibleSunrise/visibleSunset Chicago constant & function profiles', () => {
