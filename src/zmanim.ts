@@ -568,6 +568,24 @@ export class Zmanim {
    * observer's height, terrestrial refraction and Earth's curvature — a sea
    * horizon seen from a height is a negative angle), so applying the library's
    * sea-level-vs-elevation adjustment on top would double-count.
+   * @example
+   * import {GeoLocation, Zmanim} from '@hebcal/core';
+   * const gloc = new GeoLocation('Jerusalem', 31.78, 35.22, 0, 'Asia/Jerusalem');
+   * const zmanim = new Zmanim(gloc, new Date(2026, 9, 29), false);
+   * // A constant: the skyline is 3° above level in every direction
+   * zmanim.visibleSunrise(3);
+   * // Samples: a 5° ridge to the east (azimuth 90), flat elsewhere; values
+   * // between samples are interpolated, and the list wraps around at 360°
+   * zmanim.visibleSunrise([
+   *   {azimuth: 60, elevation: 0},
+   *   {azimuth: 80, elevation: 5},
+   *   {azimuth: 100, elevation: 5},
+   *   {azimuth: 120, elevation: 0},
+   * ]);
+   * // A function of azimuth (degrees clockwise from true north)
+   * zmanim.visibleSunrise((az) => (az > 70 && az < 110 ? 5 : 0));
+   * // A flat profile of 0 reproduces sunrise() to within a second
+   * zmanim.visibleSunrise(0);
    * @param horizon the terrain horizon profile
    * @return the `Date` (to the second) when the sun first becomes visible, or
    *         an `Invalid Date` when there is no such crossing that day (polar
@@ -585,6 +603,13 @@ export class Zmanim {
    * See {@link visibleSunrise} for the horizon-profile argument, the
    * refraction model, the upper-limb convention, that no cushion is added, and
    * why `useElevation` is ignored.
+   * @example
+   * import {GeoLocation, Zmanim} from '@hebcal/core';
+   * // 300 m up on the Carmel: the sea horizon to the west sits about half a
+   * // degree *below* level, so the visible sunset is later than sunset()
+   * const gloc = new GeoLocation('Haifa', 32.8, 34.98, 300, 'Asia/Jerusalem');
+   * const zmanim = new Zmanim(gloc, new Date(2026, 9, 29), false);
+   * zmanim.visibleSunset((az) => (az > 240 && az < 300 ? -0.5 : 0));
    * @param horizon the terrain horizon profile
    * @return the `Date` (to the second) when the sun was last visible, or an
    *         `Invalid Date` when there is no such crossing that day.

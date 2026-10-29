@@ -251,6 +251,21 @@ Chai Tables (Sinclair/Bennett at standard atmosphere) and no safety cushion is
 added. Building a profile from terrain or digital-elevation-model data is outside
 this library.
 
+```javascript
+import {GeoLocation, Zmanim} from '@hebcal/core';
+const gloc = new GeoLocation('Jerusalem', 31.78, 35.22, 0, 'Asia/Jerusalem');
+const zmanim = new Zmanim(gloc, new Date(2026, 9, 29), false);
+// a 5° ridge to the east (azimuth 90° = due east), flat elsewhere
+const skyline = [
+  {azimuth: 60, elevation: 0},
+  {azimuth: 80, elevation: 5},
+  {azimuth: 100, elevation: 5},
+  {azimuth: 120, elevation: 0},
+];
+zmanim.visibleSunrise(skyline); // about 20 minutes after zmanim.sunrise()
+zmanim.visibleSunset(0); // flat horizon: equals zmanim.sunset()
+```
+
 For zmanim outside the calendar-generation flow, use the
 [`Zmanim`](https://hebcal.github.io/api/core/classes/Zmanim.html) class directly.
 
