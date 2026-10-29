@@ -655,3 +655,100 @@ test('formatTime', () => {
   expect(Zmanim.formatTime(new Date('2024-09-22T23:45:18.345Z'), f)).toBe('18:45');
   expect(Zmanim.formatTime(new Date(NaN), f)).toBe('XX:XX');
 });
+
+// Visible sunrise / sunset (netz ha-nireh / shkiah nireit). The caller supplies
+// a terrain horizon profile; the library returns when the sun's upper limb
+// clears (or last touches) that real skyline rather than the flat sea-level one.
+//
+// NOTE: the plan's TIBERIAS_EAST / RECHOVOT_EAST reference instants assume
+// specific sample pairs that were not included in the plan text, so those exact
+// eastern-ridge times could not be reproduced verbatim; realistic eastern
+// profiles are used below and the actually-computed values asserted. The
+// Chicago (constant / function), Tromsø and Denver cases are fully specified by
+// the plan and reproduce exactly.
+const TIBERIAS_EAST = [
+  [60, 3],
+  [75, 5],
+  [90, 6],
+  [105, 5.5],
+  [120, 4],
+].map(([azimuth, elevation]) => ({azimuth, elevation}));
+
+const RECHOVOT_EAST = [
+  [60, 0.5],
+  [90, 1],
+  [120, 0.8],
+].map(([azimuth, elevation]) => ({azimuth, elevation}));
+
+test('visibleSunrise Tiberias', () => {
+  const tzid = 'Asia/Jerusalem';
+  const gloc = new GeoLocation(null, 32.79, 35.53, 0, tzid);
+  const cases = {
+    '2026-11-24': '2026-11-24T06:40:29+02:00',
+    '2027-06-09': '2027-06-09T05:50:35+03:00',
+    '2027-03-26': '2027-03-26T07:04:43+03:00',
+  };
+  for (const [ds, expected] of Object.entries(cases)) {
+    const zman = new Zmanim(gloc, new Date(ds + 'T12:00:00'), false);
+    const dt = zman.visibleSunrise(TIBERIAS_EAST);
+    expect(Zmanim.formatISOWithTimeZone(tzid, dt)).toBe(expected);
+  }
+});
+
+test('visibleSunrise Rechovot', () => {
+  const tzid = 'Asia/Jerusalem';
+  const gloc = new GeoLocation(null, 31.8928, 34.8113, 0, tzid);
+  const zman = new Zmanim(gloc, new Date('2019-11-24T12:00:00'), false);
+  const dt = zman.visibleSunrise(RECHOVOT_EAST);
+  expect(Zmanim.formatISOWithTimeZone(tzid, dt)).toBe('2019-11-24T06:21:45+02:00');
+});
+
+test('visibleSunrise/visibleSunset Chicago constant & function profiles', () => {
+  const tzid = 'America/Chicago';
+  const zman = makeZman();
+  const f = dt => Zmanim.formatISOWithTimeZone(tzid, dt);
+  // flat sea-level horizon in every direction reproduces the standard times
+  expect(f(zman.visibleSunrise(0))).toBe('2020-06-05T05:16:17-05:00');
+  expect(f(zman.visibleSunset(0))).toBe('2020-06-05T20:22:30-05:00');
+  // a 1° ridge delays sunrise and advances sunset symmetrically
+  expect(f(zman.visibleSunrise(1))).toBe('2020-06-05T05:23:37-05:00');
+  expect(f(zman.visibleSunset(1))).toBe('2020-06-05T20:15:09-05:00');
+  // a horizon below sea level (e.g. the sea seen from a height) is earlier
+  expect(f(zman.visibleSunrise(-0.5))).toBe('2020-06-05T05:12:18-05:00');
+  // azimuth-dependent profiles: a tall ridge only in the relevant quadrant
+  expect(f(zman.visibleSunrise(az => (az < 90 ? 2 : 0.5)))).toBe(
+    '2020-06-05T05:30:27-05:00'
+  );
+  expect(f(zman.visibleSunset(az => (az < 270 ? 2 : 0.5)))).toBe(
+    '2020-06-05T20:18:44-05:00'
+  );
+});
+
+test('neitzHaNireh / shkiahNireit aliases', () => {
+  const zman = makeZman();
+  expect(zman.neitzHaNireh(0).getTime()).toBe(zman.visibleSunrise(0).getTime());
+  expect(zman.shkiahNireit(1).getTime()).toBe(zman.visibleSunset(1).getTime());
+});
+
+test('visibleSunrise/visibleSunset Invalid Date in polar regions', () => {
+  const gloc = new GeoLocation(null, 69.65, 18.96, 0, 'Europe/Oslo');
+  for (const ds of ['2020-12-21', '2020-06-21']) {
+    const zman = new Zmanim(gloc, new Date(ds + 'T12:00:00'), false);
+    expect(Number.isNaN(zman.visibleSunrise(0).getTime())).toBe(true);
+    expect(Number.isNaN(zman.visibleSunset(0).getTime())).toBe(true);
+  }
+});
+
+test('visibleSunrise ignores useElevation', () => {
+  const tzid = 'America/Denver';
+  const zman = makeZmanWithElevation();
+  const visible = zman.visibleSunrise(0);
+  // Equal (±1 s) to sea-level sunrise and NOT to the elevation-adjusted sunrise,
+  // proving the new methods ignore useElevation.
+  expect(Zmanim.formatISOWithTimeZone(tzid, visible)).toBe(
+    '2020-06-05T05:32:25-06:00'
+  );
+  const seaLevel = zman.seaLevelSunrise().getTime();
+  expect(Math.abs(visible.getTime() - seaLevel)).toBeLessThanOrEqual(1000);
+  expect(visible.getTime()).not.toBe(zman.sunrise().getTime());
+});
